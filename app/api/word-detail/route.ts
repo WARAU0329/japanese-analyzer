@@ -34,29 +34,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 构建上下文信息
-    let contextWordInfo = `单词 "${word}" (词性: ${pos}`;
-    if (furigana) contextWordInfo += `, 读音: ${furigana}`;
-    if (romaji) contextWordInfo += `, 罗马音: ${romaji}`;
-    contextWordInfo += `)`;
+    // 构建详情查询请求，要求繁體中文台灣用語，嚴格 JSON 格式返回
+    const detailPrompt = `在日語句子「${sentence}」的上下文中，單字「${word}」(詞性: ${pos}${furigana ? `, 讀音: ${furigana}` : ''}${romaji ? `, 羅馬音: ${romaji}` : ''}) 的具體含義是什麼？請以繁體中文（台灣用語）回答，並以嚴格的 JSON 格式返回，內容中不要有 markdown 或其他非 JSON 字符。
 
-    // 构建详情查询请求
-    const detailPrompt = `在日语句子 "${sentence}" 的上下文中，${contextWordInfo} 的具体含义是什么？请提供以下信息，并以严格的JSON对象格式返回，不要包含任何markdown或其他非JSON字符：
+請特別注意：
+1. 若是動詞，請準確識別時態（過去式、現在式等）、語態（被動、使役等）和敬語程度（普通體、敬體等）
+2. 助動詞與動詞組合（如「食べた」）請明確說明原形與活用過程
+3. 形容詞請區分い形容詞與な形容詞，並識別活用形式
+4. 請準確提供辭書形，若已是辭書形，請填相同值
+5. 請使用自然、口語化的繁體中文，不使用簡體字，避免英文或其他語言
 
-请特别注意：
-1. 如果是动词，准确识别其时态（过去式、现在式等）、语态（被动、使役等）和礼貌程度（简体、敬体等）
-2. 对于助动词与动词组合（如"食べた"），明确说明原形及活用变化过程
-3. 对于形容词，注意区分い形容词和な形容词，并识别其活用形式
-4. 准确提供辞书形，对于已经是辞书形的词汇，可以填写相同的值
-
+JSON 格式範例：
 {
   "originalWord": "${word}",
-  "chineseTranslation": "中文翻译",
+  "chineseTranslation": "這裡填繁體中文翻譯",
   "pos": "${pos}",
   "furigana": "${furigana || ''}",
   "romaji": "${romaji || ''}",
-  "dictionaryForm": "辞书形（如果适用）",
-  "explanation": "中文解释（包括词形变化、时态、语态等详细语法信息）"
+  "dictionaryForm": "這裡填辭書形（如果適用）",
+  "explanation": "這裡填繁體中文解釋，包括詞形變化、時態、語態等詳細語法信息"
 }`;
 
     const payload = {
@@ -95,4 +91,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}
